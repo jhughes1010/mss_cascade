@@ -1,24 +1,30 @@
 //MSS Cascade Controller
 //James Hughes 08/20/2024
-//Version 0.1
+//debug 9/27/24
+//Version 0.2
 
 #include <Wire.h>
 #include <Adafruit_MCP23X17.h>
-
+#include <Adafruit_RGBLCDShield.h>
+//I2C port expander outputs
 #define A_GREEN 7
 #define A_YELLOW 6
 #define A_RED 5
 #define B_GREEN 4
 #define B_YELLOW 3
 #define B_RED 2
-#define A_FACING 0
-#define B_FACING 1
+
+//I2C port expander inputs
 #define A_LOCAL_OCCUPIED 0x02
 #define B_LOCAL_OCCUPIED 0x01
 #define A_MCU_OCCUPIED_OUT 15
 #define B_MCU_OCCUPIED_OUT 14
 
+#define A_FACING 0
+#define B_FACING 1
 Adafruit_MCP23X17 mcp;
+
+Adafruit_RGBLCDShield lcd = Adafruit_RGBLCDShield();
 
 void setup() {
 
@@ -27,7 +33,7 @@ void setup() {
   Serial.println("MSS Simple Cascade Controller-2");
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, HIGH);
-  delay(2000);
+  //jh delay(2000);
   // put your setup code here, to run once:
   // uncomment appropriate mcp.begin
   if (!mcp.begin_I2C(0x27)) {
@@ -74,6 +80,11 @@ void setup() {
   set(A_RED);
   set(B_RED);
   delay(1000);
+
+  //LCD
+  lcd.begin(16, 2);
+  lcd.setBacklight(0x01);
+  lcd.print("Simple Cascade");
 }
 
 void loop() {
@@ -87,7 +98,7 @@ void loop() {
   int A_approach, B_approach;
   int A_advance_approach, B_advance_approach;
   static long int currentTime = 0, transitionTime = 0;
-  bool optical, A_active = false, B_active = false;
+  bool optical = false, A_active = false, B_active = false;
   static bool stable = false;
 
   currentTime = millis();
@@ -101,23 +112,19 @@ void loop() {
   //----------
   //SET OUTPUT OCCUPANCY PULLDOWNS
   //----------
-  if (localOccupied & A_LOCAL_OCCUPIED) {
-    mcp.digitalWrite(B_MCU_OCCUPIED_OUT, HIGH);
-    //mcp.digitalWrite(A_MCU_OCCUPIED_OUT, LOW);
+  if (optical || (localOccupied & A_LOCAL_OCCUPIED)) {
+    mcp.digitalWrite(A_MCU_OCCUPIED_OUT, HIGH);
     Serial.println("A local occupied");
     //stable = false;
   } else {
-    mcp.digitalWrite(B_MCU_OCCUPIED_OUT, LOW);
-    //mcp.digitalWrite(A_MCU_OCCUPIED_OUT, LOW);
+    mcp.digitalWrite(A_MCU_OCCUPIED_OUT, LOW);
   }
-  if (localOccupied & B_LOCAL_OCCUPIED) {
-    mcp.digitalWrite(A_MCU_OCCUPIED_OUT, HIGH);
-    //mcp.digitalWrite(B_MCU_OCCUPIED_OUT, LOW);
+  if (optical || (localOccupied & B_LOCAL_OCCUPIED)) {
+    mcp.digitalWrite(B_MCU_OCCUPIED_OUT, HIGH);
     Serial.println("B local occupied");
     //stable = false;
   } else {
-    mcp.digitalWrite(A_MCU_OCCUPIED_OUT, LOW);
-    //mcp.digitalWrite(B_MCU_OCCUPIED_OUT, LOW);
+    mcp.digitalWrite(B_MCU_OCCUPIED_OUT, LOW);
   }
 
   if (GPIORegister || A_active || B_active || optical) {
