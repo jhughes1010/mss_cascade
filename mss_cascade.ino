@@ -1,5 +1,5 @@
 //MSS Cascade Controller
-//James Hughes 08/20/2024
+//James Hughes 09/27/2024
 //debug 9/27/24
 //Version 0.2
 
@@ -17,8 +17,8 @@
 //I2C port expander inputs
 #define A_LOCAL_OCCUPIED 0x02
 #define B_LOCAL_OCCUPIED 0x01
-#define A_MCU_OCCUPIED_OUT 15
-#define B_MCU_OCCUPIED_OUT 14
+#define A_MCU_OCCUPIED_OUT 14
+#define B_MCU_OCCUPIED_OUT 15
 
 #define A_FACING 0
 #define B_FACING 1
@@ -109,9 +109,12 @@ void loop() {
   //read GPIOs
   GPIORegister = (0xffff - mcp.readGPIOAB()) & 0x3f03;
   localOccupied = GPIORegister & 0x03;
+  A_occupied = GPIORegister & 0x100;
+  B_occupied = GPIORegister & 0x800;
   //----------
   //SET OUTPUT OCCUPANCY PULLDOWNS
   //----------
+
   if (optical || (localOccupied & A_LOCAL_OCCUPIED)) {
     mcp.digitalWrite(A_MCU_OCCUPIED_OUT, HIGH);
     Serial.println("A local occupied");
@@ -126,6 +129,7 @@ void loop() {
   } else {
     mcp.digitalWrite(B_MCU_OCCUPIED_OUT, LOW);
   }
+
 
   if (GPIORegister || A_active || B_active || optical) {
     stable = false;
@@ -181,43 +185,49 @@ void loop() {
       dark(B_FACING);
       set(B_RED);
       Serial.println("B RED");
+    } else if (A_approach) {
+      dark(1);
+      set(B_YELLOW);
+    } else if (A_advance_approach) {
+      dark(1);
+      if ((currentTime / 1000) % 2) {
+        set(B_YELLOW);
+      }
     }
+
+    else if (!A_occupied && !A_approach && !A_advance_approach && !optical) {
+      dark(1);
+      set(B_GREEN);
+      stable = true;
+    }
+
+
+
+
     if (B_occupied) {
       dark(A_FACING);
       set(A_RED);
       Serial.println("A RED");
     }
 
+    //Check for approach
 
-    if (A_approach) {
-      dark(1);
-      set(B_YELLOW);
-    }
-    if (B_approach) {
+    else if (B_approach) {
       dark(0);
       set(A_YELLOW);
     }
+    //Check for advance approach
 
-    if (A_advance_approach) {
-      dark(1);
-      if ((currentTime / 1000) % 2) {
-        set(B_YELLOW);
-      }
-    }
-    if (B_advance_approach) {
+    else if (B_advance_approach) {
       dark(0);
       if ((currentTime / 1000) % 2) {
         set(A_YELLOW);
       }
     }
+    //Check for green
 
-    if (!A_occupied && !A_approach && !A_advance_approach && !optical) {
-      dark(1);
-      set(B_GREEN);
-      stable = true;
-    }
 
-    if (!B_occupied && !B_approach && !B_advance_approach && !optical) {
+    else if (!B_occupied && !B_approach && !B_advance_approach && !optical) {
       dark(0);
       set(A_GREEN);
       stable = true;
