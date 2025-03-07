@@ -24,3 +24,55 @@ bool readOptical(uint8_t sensorPin) {
   digitalWrite(LED_BUILTIN, status);
   return status;
 }
+
+int readA(int GPIO, bool optical) {
+  int level = 0;
+  int maskOccupied = 0x0800;
+  int maskApproach = 0x1000;
+  int maskAdvanceApproach = 0x2000;
+
+  if (GPIO & maskAdvanceApproach) {
+    level = 1;
+  }
+  if (GPIO & maskApproach) {
+    level = 2;
+  }
+  if (GPIO & maskOccupied) {
+    level = 3;
+  }
+  return level;
+}
+
+int readB(int GPIO, bool optical) {
+  int level = 0;
+  int maskOccupied = 0x0100;
+  int maskApproach = 0x0200;
+  int maskAdvanceApproach = 0x0400;
+
+  if (GPIO & maskAdvanceApproach) {
+    level = 1;
+  }
+  if (GPIO & maskApproach) {
+    level = 2;
+  }
+  if (GPIO & maskOccupied) {
+    level = 3;
+  }
+  return level;
+}
+
+void LocalOccupied(int status) {
+  mcp.digitalWrite(A_MCU_OCCUPIED_OUT, status);
+  mcp.digitalWrite(B_MCU_OCCUPIED_OUT, status);
+}
+/*
+void setLocalOccupied(void) {
+  mcp.digitalWrite(A_MCU_OCCUPIED_OUT, HIGH);
+  mcp.digitalWrite(B_MCU_OCCUPIED_OUT, HIGH);
+}
+
+
+void clearLocalOccupied(void) {
+  mcp.digitalWrite(A_MCU_OCCUPIED_OUT, LOW);
+  mcp.digitalWrite(B_MCU_OCCUPIED_OUT, LOW);
+}*/
