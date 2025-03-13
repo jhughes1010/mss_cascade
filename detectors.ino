@@ -10,18 +10,18 @@ bool readOptical(uint8_t sensorPin) {
   int sensorThreshold = 13;
 
   pinValue = analogRead(sensorPin);
-  Serial.print("Optical Sensor: ");
-  Serial.println(pinValue);
+  //Serial.print("Optical Sensor: ");
+  //Serial.println(pinValue);
   if (pinValue >= sensorThreshold) {
     event = millis();
     status = true;
-    Serial.println("Optical TRUE");
+    //Serial.println("Optical TRUE");
   } else {
     if (event + opticalDelay < millis()) {
       status = false;
     }
   }
-  digitalWrite(LED_BUILTIN, status);
+  //digitalWrite(LED_BUILTIN, status);
   return status;
 }
 
@@ -65,14 +65,3 @@ void LocalOccupied(int status) {
   mcp.digitalWrite(A_MCU_OCCUPIED_OUT, status);
   mcp.digitalWrite(B_MCU_OCCUPIED_OUT, status);
 }
-/*
-void setLocalOccupied(void) {
-  mcp.digitalWrite(A_MCU_OCCUPIED_OUT, HIGH);
-  mcp.digitalWrite(B_MCU_OCCUPIED_OUT, HIGH);
-}
-
-
-void clearLocalOccupied(void) {
-  mcp.digitalWrite(A_MCU_OCCUPIED_OUT, LOW);
-  mcp.digitalWrite(B_MCU_OCCUPIED_OUT, LOW);
-}*/

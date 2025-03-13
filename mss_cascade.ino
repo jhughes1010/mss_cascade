@@ -104,8 +104,8 @@ void loop() {
   bool darkFlag = false;
   static bool wakeTrigger = false;
   int AStatus, BStatus;
-  long int darkTime =60000;
-  int heartbeat = (millis()/500)%2;
+  long int darkTime = 60000;
+  int heartbeat = (millis() / 1000) % 2;
 
 
 
@@ -120,8 +120,8 @@ void loop() {
     darkFlag = true;
   }
 
-  Serial.print("\n\n");
-  Serial.println(((float)currentTime / 1000));
+  //Serial.print("\n\n");
+  //Serial.println(((float)currentTime / 1000));
   //get inputs
   optical = readOptical(A0);
   if (optical) {
@@ -131,27 +131,27 @@ void loop() {
   }
 
   GPIORegister = (0xffff - mcp.readGPIOAB()) & 0x3f03;
-  Serial.print("GPIO: ");
-  Serial.println(GPIORegister, HEX);
+  //Serial.print("GPIO: ");
+  //Serial.println(GPIORegister, HEX);
 
   //determine singal level
-  //3 = occupied (current or optical), 2 = approach, 1 = advanced approach
+  //3 = occupied (current or optical), 2 = approach, 1 = advanced approach, 0 = clear
   AStatus = readA(GPIORegister, optical);
   BStatus = readB(GPIORegister, optical);
 
   //any non-zero status resets activeTime
   if (AStatus || BStatus) {
     activeTime = currentTime;
-    Serial.println("Setting activeTime");
+    //Serial.println("Setting activeTime");
   }
 
   lcd.print(AStatus);
   lcd.print(":");
   lcd.print(BStatus);
 
-  Serial.print(AStatus);
-  Serial.print(":");
-  Serial.println(BStatus);
+  //Serial.print(AStatus);
+  //Serial.print(":");
+  //Serial.println(BStatus);
 
   //set local occupied if needed
   //set signal mast state
