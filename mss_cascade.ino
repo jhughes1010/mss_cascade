@@ -145,13 +145,8 @@ void loop() {
     //Serial.println("Setting activeTime");
   }
 
-  lcd.print(AStatus);
-  lcd.print(":");
-  lcd.print(BStatus);
-
-  //Serial.print(AStatus);
-  //Serial.print(":");
-  //Serial.println(BStatus);
+  lcdPrintStatus(AStatus, BStatus);
+  printStatus(AStatus, BStatus);
 
   //set local occupied if needed
   //set signal mast state
@@ -165,152 +160,36 @@ void loop() {
     setMastB(BStatus, wakeTrigger);
     wakeTrigger = false;
   }
-  //delay(3000);
 }
 
-void loop_original() {
-  char main[3];
-  char mainApr[3];
-  char diverge[3];
-  char tmp[16];
-  int GPIORegister;
-  int localOccupied;
-  int A_occupied, B_occupied;
-  int A_approach, B_approach;
-  int A_advance_approach, B_advance_approach;
-  static long int currentTime = 0, transitionTime = 0;
-  bool optical = false, A_active = false, B_active = false;
-  static bool stable = false;
-
-  currentTime = millis();
-  //Serial.println(((float)currentTime / 1000));
-  Serial.println("\n\nTop of loop");
-  // read optical
-  optical = readOptical(A0);
-  //read GPIOs
-  GPIORegister = (0xffff - mcp.readGPIOAB()) & 0x3f03;
-  localOccupied = GPIORegister & 0x03;
-  A_occupied = GPIORegister & 0x100;
-  B_occupied = GPIORegister & 0x800;
-  //----------
-  //SET OUTPUT OCCUPANCY PULLDOWNS
-  //----------
-
-  if (optical || (localOccupied & A_LOCAL_OCCUPIED)) {
-    mcp.digitalWrite(A_MCU_OCCUPIED_OUT, HIGH);
-    Serial.println("A local occupied");
-    //stable = false;
-  } else {
-    mcp.digitalWrite(A_MCU_OCCUPIED_OUT, LOW);
-  }
-  if (optical || (localOccupied & B_LOCAL_OCCUPIED)) {
-    mcp.digitalWrite(B_MCU_OCCUPIED_OUT, HIGH);
-    Serial.println("B local occupied");
-    //stable = false;
-  } else {
-    mcp.digitalWrite(B_MCU_OCCUPIED_OUT, LOW);
+//Simple print-on-change
+void printStatus(int A, int B) {
+  static int APrior = 0;
+  static int BPrior = 0;
+  if (APrior != A || BPrior != B) {
+    Serial.print("Status ");
+    Serial.print(A);
+    Serial.print(":");
+    Serial.println(B);
   }
 
+  APrior = A;
+  BPrior = B;
+}
 
-  if (GPIORegister || A_active || B_active || optical) {
-    stable = false;
+//Simple print-on-change
+void lcdPrintStatus(int A, int B) {
+  static int APrior = 0;
+  static int BPrior = 0;
+  if (APrior != A || BPrior != B) {
+    lcd.clear();
+    lcd.home();
+    lcd.print("Status ");
+    lcd.print(A);
+    lcd.print(":");
+    lcd.print(B);
   }
 
-  if (GPIORegister & 0x0700) {
-    A_active = true;
-    transitionTime = currentTime;
-  } else if (currentTime - transitionTime > 1000) {
-    A_active = false;
-  }
-
-
-
-  //Set active flag to reduce flicker
-  if (GPIORegister & 0x3800) {
-    B_active = true;
-    transitionTime = currentTime;
-  } else if (currentTime - transitionTime > 1000) {
-    B_active = false;
-  }
-
-
-
-  Serial.print("GPIO: ");
-  Serial.println(GPIORegister, 16);
-  Serial.print("Local Occupied: ");
-  Serial.println(localOccupied, 16);
-
-
-  A_occupied = GPIORegister & 0x100;
-  B_occupied = GPIORegister & 0x800;
-  A_approach = GPIORegister & 0x200;
-  B_approach = GPIORegister & 0x1000;
-  A_advance_approach = GPIORegister & 0x400;
-  B_advance_approach = GPIORegister & 0x2000;
-
-
-
-
-  //----------
-  //SET OUTPUT LAMPS
-  //----------
-
-  if (!stable || A_active || B_active) {
-    if (optical) {
-      dark();
-      set(A_RED);
-      set(B_RED);
-    }
-
-    if (A_occupied) {
-      dark(B_FACING);
-      set(B_RED);
-      Serial.println("B RED");
-    } else if (A_approach) {
-      dark(1);
-      set(B_YELLOW);
-    } else if (A_advance_approach) {
-      dark(1);
-      if ((currentTime / 1000) % 2) {
-        set(B_YELLOW);
-      }
-    }
-
-    else if (!A_occupied && !A_approach && !A_advance_approach && !optical) {
-      dark(1);
-      set(B_GREEN);
-      stable = true;
-    }
-
-
-
-
-    if (B_occupied) {
-      dark(A_FACING);
-      set(A_RED);
-      Serial.println("A RED");
-    }
-
-    //Check for approach
-
-    else if (B_approach) {
-      dark(0);
-      set(A_YELLOW);
-    }
-
-    else if (B_advance_approach) {
-      dark(0);
-      if ((currentTime / 1000) % 2) {
-        set(A_YELLOW);
-      }
-    }
-
-    else if (!B_occupied && !B_approach && !B_advance_approach && !optical) {
-      dark(0);
-      set(A_GREEN);
-      stable = true;
-    }
-  }
-  Serial.println(stable);
-  //delay(1000);
+  APrior = A;
+  BPrior = B;
 }
