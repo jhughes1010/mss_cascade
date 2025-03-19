@@ -5,7 +5,7 @@ void set(int pin) {
 }
 
 void dark(void) {
-  Serial.println("dark");
+  //Serial.println("dark");
   mcp.digitalWrite(A_GREEN, HIGH);
   mcp.digitalWrite(B_GREEN, HIGH);
   mcp.digitalWrite(A_YELLOW, HIGH);
@@ -14,8 +14,8 @@ void dark(void) {
   mcp.digitalWrite(B_RED, HIGH);
 }
 void dark(int side) {
-  Serial.print("dark setting side ");
-  Serial.println(side);
+  //Serial.print("dark setting side ");
+  //Serial.println(side);
   if (side == 0) {
     mcp.digitalWrite(A_GREEN, HIGH);
     mcp.digitalWrite(A_YELLOW, HIGH);

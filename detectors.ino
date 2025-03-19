@@ -65,3 +65,13 @@ void LocalOccupied(int status) {
   mcp.digitalWrite(A_MCU_OCCUPIED_OUT, status);
   mcp.digitalWrite(B_MCU_OCCUPIED_OUT, status);
 }
+
+void LocalOccupiedA(int status) {
+  mcp.digitalWrite(A_MCU_OCCUPIED_OUT, status);
+  //mcp.digitalWrite(B_MCU_OCCUPIED_OUT, status);
+}
+
+void LocalOccupiedB(int status) {
+  //mcp.digitalWrite(A_MCU_OCCUPIED_OUT, status);
+  mcp.digitalWrite(B_MCU_OCCUPIED_OUT, status);
+}

@@ -100,7 +100,7 @@ void loop() {
   static long int activeTime = 0;
   long int currentTime;
   int GPIORegister;
-  bool optical;
+  bool optical, aOccupied = false, bOccupied = false;
   bool darkFlag = false;
   static bool wakeTrigger = false;
   int AStatus, BStatus;
@@ -123,16 +123,35 @@ void loop() {
   //Serial.print("\n\n");
   //Serial.println(((float)currentTime / 1000));
   //get inputs
+  
   optical = readOptical(A0);
   if (optical) {
-    LocalOccupied(HIGH);
-  } else {
-    LocalOccupied(LOW);
+    aOccupied=true;
+    bOccupied=true;
   }
+  
 
   GPIORegister = (0xffff - mcp.readGPIOAB()) & 0x3f03;
-  //Serial.print("GPIO: ");
-  //Serial.println(GPIORegister, HEX);
+  Serial.print("GPIO: ");
+  Serial.println(GPIORegister, HEX);
+
+  //Check local occupancy detectors
+  if (GPIORegister & A_LOCAL_OCCUPIED) {
+    aOccupied=true;
+    //LocalOccupiedA(HIGH);
+  } else {
+    //LocalOccupiedA(LOW);
+  }
+  if (GPIORegister & B_LOCAL_OCCUPIED) {
+    bOccupied=true;
+    //LocalOccupiedB(HIGH);
+  } else {
+    //LocalOccupiedB(LOW);
+  }
+
+  LocalOccupiedA(aOccupied);
+  LocalOccupiedB(bOccupied);
+
 
   //determine singal level
   //3 = occupied (current or optical), 2 = approach, 1 = advanced approach, 0 = clear
