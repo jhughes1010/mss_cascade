@@ -42,10 +42,12 @@ void blinkInv(int pin, int time_delay) {
 
 
 void setMastA(int status, bool wakeFromDark) {
+  //static long int changeTime = 0;
   long int seconds = millis() / 1000;
   static int priorStatus = -1;
-  if ((status != priorStatus)||status==1||wakeFromDark){
+  if ((status != priorStatus) || status == 1 || wakeFromDark) {
     dark(0);
+    //delay(500);
     if (status == 3)
       mcp.digitalWrite(A_RED, LOW);
     if (status == 2)
@@ -56,18 +58,19 @@ void setMastA(int status, bool wakeFromDark) {
       else {
         mcp.digitalWrite(A_YELLOW, HIGH);
       }
+      if (status == 0)
+        mcp.digitalWrite(A_GREEN, LOW);
     }
-    if (status == 0)
-      mcp.digitalWrite(A_GREEN, LOW);
+
+    //changeTime = millis();
   }
-  priorStatus = status;
 }
 
 void setMastB(int status, bool wakeFromDark) {
   long int seconds = millis() / 1000;
   static int priorStatus = -1;
 
-  if ((status != priorStatus)||status==1||wakeFromDark) {
+  if ((status != priorStatus) || status == 1 || wakeFromDark) {
     dark(1);
     if (status == 3)
       mcp.digitalWrite(B_RED, LOW);
@@ -79,9 +82,9 @@ void setMastB(int status, bool wakeFromDark) {
       else {
         mcp.digitalWrite(B_YELLOW, HIGH);
       }
+      if (status == 0)
+        mcp.digitalWrite(B_GREEN, LOW);
     }
-    if (status == 0)
-      mcp.digitalWrite(B_GREEN, LOW);
   }
   priorStatus = status;
 }

@@ -97,12 +97,12 @@ void setup() {
 }
 
 void loop() {
-  static long int activeTime = 0;
+  static long int activeTime = 0, occupiedTime = 0;
   long int currentTime;
-  int GPIORegister;
+  int GPIORegister, localOccupancy;
   bool optical, aOccupied = false, bOccupied = false;
   bool darkFlag = false;
-  static bool wakeTrigger = false;
+  static bool wakeTrigger = false, opticalTrigger = false;
   int AStatus, BStatus;
   long int darkTime = 60000;
   int heartbeat = (millis() / 1000) % 2;
@@ -116,37 +116,38 @@ void loop() {
   currentTime = millis();
   //set dark flag
   if ((currentTime - activeTime) > darkTime) {
-    Serial.println("Cascade is dark");
+    //Serial.println("Cascade is dark");
     darkFlag = true;
   }
 
-  //Serial.print("\n\n");
-  //Serial.println(((float)currentTime / 1000));
-  //get inputs
-  
-  optical = readOptical(A0);
-  if (optical) {
-    aOccupied=true;
-    bOccupied=true;
-  }
-  
-
   GPIORegister = (0xffff - mcp.readGPIOAB()) & 0x3f03;
-  Serial.print("GPIO: ");
-  Serial.println(GPIORegister, HEX);
+  localOccupancy = GPIORegister & 0x0003;
+  //Serial.print("GPIO: ");
+  //Serial.println(GPIORegister, HEX);
+  /*if (currentTime % 500 < 20) {
+    GPIORegisterSnapshot = GPIORegister;
+  }*/
+
+  //get optical status
+  optical = readOptical(A0);
+  if (localOccupancy) {
+    opticalTrigger = true;
+    occupiedTime = millis();
+  }
+  if (optical && opticalTrigger) {
+    aOccupied = true;
+    bOccupied = true;
+  }
+  if(occupiedTime +30000<millis()){
+    opticalTrigger=false;
+  }
 
   //Check local occupancy detectors
-  if (GPIORegister & A_LOCAL_OCCUPIED) {
-    aOccupied=true;
-    //LocalOccupiedA(HIGH);
-  } else {
-    //LocalOccupiedA(LOW);
+  if (localOccupancy & A_LOCAL_OCCUPIED) {
+    aOccupied = true;
   }
-  if (GPIORegister & B_LOCAL_OCCUPIED) {
-    bOccupied=true;
-    //LocalOccupiedB(HIGH);
-  } else {
-    //LocalOccupiedB(LOW);
+  if (localOccupancy & B_LOCAL_OCCUPIED) {
+    bOccupied = true;
   }
 
   LocalOccupiedA(aOccupied);

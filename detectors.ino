@@ -1,5 +1,5 @@
 //optical delay for hiding flicker
-long int opticalDelay = 1000;
+long int opticalDelay = 3000;
 long int currentDelay = 1000;
 
 
