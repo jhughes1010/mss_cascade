@@ -1,9 +1,10 @@
 //MSS Cascade Controller
-//James Hughes 09/27/2024
-#define VERSION "0.4"
+//James Hughes 03/31/2025
+#define VERSION "2025.4.4"
 
 //09-28-2024  0.3 Refactor code with new loop
 //03-07-2025  0.4 New main loop and signals go dark after 60s of green
+//in layout edits to get everything functioning
 
 
 #include <Wire.h>
@@ -99,12 +100,12 @@ void setup() {
 void loop() {
   static long int activeTime = 0, occupiedTime = 0;
   long int currentTime;
-  int GPIORegister, localOccupancy;
+  int GPIORegister = 0, localOccupancy = 0;
   bool optical, aOccupied = false, bOccupied = false;
   bool darkFlag = false;
   static bool wakeTrigger = false, opticalTrigger = false;
-  int AStatus, BStatus;
-  long int darkTime = 60000;
+  int AStatus=0, BStatus=0;
+  long int darkTime = 120000;
   int heartbeat = (millis() / 1000) % 2;
 
 
@@ -114,22 +115,23 @@ void loop() {
 
   //get time
   currentTime = millis();
-  //set dark flag
+  //check to see if dark flag is active dark flag
   if ((currentTime - activeTime) > darkTime) {
-    //Serial.println("Cascade is dark");
     darkFlag = true;
   }
 
+  //sample inputs, but not constantly
+  //if (currentTime % 500 < 100) {
   GPIORegister = (0xffff - mcp.readGPIOAB()) & 0x3f03;
+  //jhSerial.println(GPIORegister,HEX);
   localOccupancy = GPIORegister & 0x0003;
-  //Serial.print("GPIO: ");
-  //Serial.println(GPIORegister, HEX);
-  /*if (currentTime % 500 < 20) {
-    GPIORegisterSnapshot = GPIORegister;
-  }*/
-
   //get optical status
   optical = readOptical(A0);
+  //optical=false;
+  //jhSerial.println(optical);
+  delay(20);
+  //}
+
   if (localOccupancy) {
     opticalTrigger = true;
     occupiedTime = millis();
@@ -138,8 +140,8 @@ void loop() {
     aOccupied = true;
     bOccupied = true;
   }
-  if(occupiedTime +30000<millis()){
-    opticalTrigger=false;
+  if (occupiedTime + 30000 < millis()) {
+    opticalTrigger = false;
   }
 
   //Check local occupancy detectors
@@ -156,8 +158,10 @@ void loop() {
 
   //determine singal level
   //3 = occupied (current or optical), 2 = approach, 1 = advanced approach, 0 = clear
+
   AStatus = readA(GPIORegister, optical);
   BStatus = readB(GPIORegister, optical);
+
 
   //any non-zero status resets activeTime
   if (AStatus || BStatus) {
@@ -176,9 +180,11 @@ void loop() {
     dark();
     wakeTrigger = true;
   } else {
-    setMastA(AStatus, wakeTrigger);
-    setMastB(BStatus, wakeTrigger);
-    wakeTrigger = false;
+    if (currentTime % 1000 < 100) {
+      setMastA(AStatus, wakeTrigger);
+      setMastB(BStatus, wakeTrigger);
+      wakeTrigger = false;
+    }
   }
 }
 

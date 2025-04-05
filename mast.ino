@@ -58,10 +58,11 @@ void setMastA(int status, bool wakeFromDark) {
       else {
         mcp.digitalWrite(A_YELLOW, HIGH);
       }
-      if (status == 0)
-        mcp.digitalWrite(A_GREEN, LOW);
+      //if (status == 0)
+      //mcp.digitalWrite(A_GREEN, LOW);
     }
-
+    if (status == 0)
+      mcp.digitalWrite(A_GREEN, LOW);
     //changeTime = millis();
   }
 }
@@ -82,9 +83,11 @@ void setMastB(int status, bool wakeFromDark) {
       else {
         mcp.digitalWrite(B_YELLOW, HIGH);
       }
-      if (status == 0)
-        mcp.digitalWrite(B_GREEN, LOW);
+      //if (status == 0)
+      //mcp.digitalWrite(B_GREEN, LOW);
     }
+    if (status == 0)
+      mcp.digitalWrite(B_GREEN, LOW);
   }
   priorStatus = status;
 }
