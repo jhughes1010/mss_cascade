@@ -1,5 +1,5 @@
 //MSS Cascade Controller
-//James Hughes 03/31/2025
+//James Hughes
 #define VERSION "2025.4.4"
 
 //09-28-2024  0.3 Refactor code with new loop
@@ -26,6 +26,8 @@
 
 #define A_FACING 0
 #define B_FACING 1
+
+#define DARKTIME 120  //sec of no activity before mast is dark
 Adafruit_MCP23X17 mcp;
 
 Adafruit_RGBLCDShield lcd = Adafruit_RGBLCDShield();
@@ -104,8 +106,8 @@ void loop() {
   bool optical, aOccupied = false, bOccupied = false;
   bool darkFlag = false;
   static bool wakeTrigger = false, opticalTrigger = false;
-  int AStatus=0, BStatus=0;
-  long int darkTime = 120000;
+  int AStatus = 0, BStatus = 0;
+  long int darkTime = DARKTIME * 1000;
   int heartbeat = (millis() / 1000) % 2;
 
 
