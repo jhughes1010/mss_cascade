@@ -1,10 +1,12 @@
 //MSS Cascade Controller
 //James Hughes
-#define VERSION "2025.4.4"
+#define VERSION "2025.9.18"
 
 //09-28-2024  0.3 Refactor code with new loop
 //03-07-2025  0.4 New main loop and signals go dark after 60s of green
 //in layout edits to get everything functioning
+
+//25.9.18 Changed dark time to 180 seconds
 
 
 #include <Wire.h>
@@ -27,7 +29,7 @@
 #define A_FACING 0
 #define B_FACING 1
 
-#define DARKTIME 120  //sec of no activity before mast is dark
+#define DARKTIME 180  //sec of no activity before mast is dark
 Adafruit_MCP23X17 mcp;
 
 Adafruit_RGBLCDShield lcd = Adafruit_RGBLCDShield();
@@ -37,7 +39,8 @@ void setup() {
   Serial.begin(9600);
   //while (!Serial);
   Serial.println("MSS Simple Cascade Controller");
-  Serial.println("James Hughes - 2025");
+  Serial.print("James Hughes - ");
+  Serial.println(VERSION);
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, HIGH);
   //jh delay(2000);
