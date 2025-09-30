@@ -1,12 +1,13 @@
 //MSS Cascade Controller
 //James Hughes
-#define VERSION "2025.9.18"
+#define VERSION "2025.9.30"
 
 //09-28-2024  0.3 Refactor code with new loop
 //03-07-2025  0.4 New main loop and signals go dark after 60s of green
 //in layout edits to get everything functioning
 
 //25.9.18 Changed dark time to 180 seconds
+//25.9.30 Added heartbeat function with error flag for MCP init failure
 
 
 #include <Wire.h>
@@ -49,7 +50,9 @@ void setup() {
   if (!mcp.begin_I2C(0x27)) {
     //if (!mcp.begin_SPI(CS_PIN)) {
     Serial.println("Port Expander not responding");
-    while (1) {}
+    while (1) {
+      heartbeat(250);
+    }
   }
   //setPIN direction
   int pin;
@@ -111,12 +114,9 @@ void loop() {
   static bool wakeTrigger = false, opticalTrigger = false;
   int AStatus = 0, BStatus = 0;
   long int darkTime = DARKTIME * 1000;
-  int heartbeat = (millis() / 1000) % 2;
-
-
-
+ 
   //heartbeat on internal LED
-  digitalWrite(LED_BUILTIN, heartbeat);
+  heartbeat(2000);
 
   //get time
   currentTime = millis();
@@ -223,4 +223,11 @@ void lcdPrintStatus(int A, int B) {
 
   APrior = A;
   BPrior = B;
+}
+
+void heartbeat(int time)
+{
+  bool status;
+  status =(millis()/time)%2;
+   digitalWrite(LED_BUILTIN, status);
 }
